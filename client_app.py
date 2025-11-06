@@ -30,48 +30,73 @@ def stream_yashika(message, on_chunk, on_done, on_error):
 class ChatWindow(Gtk.Box):
     def __init__(self, back_callback):
         super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        self.set_halign(Gtk.Align.FILL)
+        self.set_valign(Gtk.Align.FILL)
+
+        # Wrap everything in a "glassBox" container
+        container = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        container.set_css_classes(["glassBox"])
+        container.set_margin_top(10)
+        container.set_margin_bottom(10)
+        container.set_margin_start(10)
+        container.set_margin_end(10)
+        self.append(container)
 
         # Back button
         back_btn = Gtk.Button(label="⬅ Back")
         back_btn.set_css_classes(["cyberButton"])
         back_btn.connect("clicked", lambda *_: back_callback())
-        self.append(back_btn)
+        container.append(back_btn)
 
         # Chat history
         self.textview = Gtk.TextView()
         self.textview.set_editable(False)
         self.textview.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
+        self.textview.set_css_classes(["textViewChat"])
         self.textbuffer = self.textview.get_buffer()
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_child(self.textview)
         scrolled.set_vexpand(True)
-        scrolled.set_margin_top(10)
-        scrolled.set_margin_bottom(10)
-        self.append(scrolled)
+        container.append(scrolled)
 
         # Typing indicator
         self.typing_label = Gtk.Label(label="")
         self.typing_label.set_halign(Gtk.Align.START)
-        self.append(self.typing_label)
+        container.append(self.typing_label)
 
         # Input + button
         input_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         self.entry = Gtk.Entry()
         self.entry.set_placeholder_text("Type your message...")
-        self.textview.set_css_classes(["textViewChat"])
         self.entry.set_css_classes(["chatEntry"])
+        self.entry.set_hexpand(True)
         self.entry.connect("activate", self.on_send)
         send_button = Gtk.Button(label="Send")
         send_button.set_css_classes(["cyberButton"])
         send_button.connect("clicked", self.on_send)
         input_box.append(self.entry)
         input_box.append(send_button)
-        self.append(input_box)
+        container.append(input_box)
 
         # Reusable tags with softer colors
-        self.tag_you = self.textbuffer.create_tag("chatYou", foreground="#ff99ff", weight=700)  # soft magenta
-        self.tag_bot = self.textbuffer.create_tag("chatBot", foreground="#66cccc")  # soft cyan/teal
-        self.tag_err = self.textbuffer.create_tag("chatError", foreground="#ff6666")  # softer red
+        self.tag_you = self.textbuffer.create_tag(
+            "chatYou",
+            foreground="#ff99ff",
+            weight=700,
+            size_points=16  # 👈 font size for your text
+        )
+        self.tag_bot = self.textbuffer.create_tag(
+            "chatBot",
+            foreground="#66cccc",
+            size_points=16  # 👈 same for Yashika
+        )
+        self.tag_err = self.textbuffer.create_tag(
+            "chatError",
+            foreground="#ff6666",
+            weight=600,
+            size_points=15
+        )
+
 
         # Streaming state
         self.bot_mark = None
@@ -125,7 +150,7 @@ class ChatWindow(Gtk.Box):
         self.entry.set_text("")
         self._append_line("You", msg, self.tag_you)
 
-        self.typing_label.set_text("Yashika is typing…")
+        self.typing_label.set_markup('<span foreground="white" size="16000">Yashika is typing…</span>')
         self.reply_accum = []
 
         def on_chunk(text):
@@ -154,6 +179,57 @@ class ChatWindow(Gtk.Box):
         ).start()
 
 
+# -------- Presets Window --------
+class PresetsWindow(Gtk.Box):
+    def __init__(self, back_callback):
+        super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        self.set_halign(Gtk.Align.FILL)
+        self.set_valign(Gtk.Align.FILL)
+        self.set_margin_top(20)
+        self.set_margin_bottom(20)
+        self.set_css_classes(["glassBox"])
+
+        # Back button
+        back_btn = Gtk.Button(label="⬅ Back")
+        back_btn.set_css_classes(["cyberButton"])
+        back_btn.connect("clicked", lambda *_: back_callback())
+        self.append(back_btn)
+
+        # Scrollable area
+        self.presets_list = Gtk.ListBox()
+        self.presets_list.set_selection_mode(Gtk.SelectionMode.NONE)
+        scrolled_presets = Gtk.ScrolledWindow()
+        scrolled_presets.set_child(self.presets_list)
+        scrolled_presets.set_vexpand(True)
+        self.append(scrolled_presets)
+
+        # Add demo presets
+        demo_presets = [
+            ("Morning Routine", self.activate_preset),
+            ("Workout Mode", self.activate_preset),
+            ("Study Mode", self.activate_preset),
+            ("Gaming Mode", self.activate_preset),
+            ("Night Mode", self.activate_preset),
+        ]
+        for name, callback in demo_presets:
+            row = Gtk.ListBoxRow()
+            box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+            label = Gtk.Label(label=name, xalign=0)
+            button = Gtk.Button(label="Activate")
+            button.set_css_classes(["cyberButton"])
+            button.connect("clicked", lambda _, n=name: callback(n))
+            box.append(label)
+            box.append(button)
+            row.set_child(box)
+            self.presets_list.append(row)
+
+    # Placeholder for future functionality
+    def activate_preset(self, preset_name):
+        print(f"Activating preset: {preset_name}")
+        # Future logic goes here (e.g., API call, system command, etc.)
+
+
+
 # -------- Main Dashboard --------
 class YashikaUI(Gtk.ApplicationWindow):
     def __init__(self, app):
@@ -165,7 +241,7 @@ class YashikaUI(Gtk.ApplicationWindow):
         self.stack = Gtk.Stack()
         self.set_child(self.stack)
 
-        # Dashboard Screen
+        # ---------------- Dashboard Screen ----------------
         dashboard = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
         dashboard.set_halign(Gtk.Align.CENTER)
         dashboard.set_valign(Gtk.Align.CENTER)
@@ -182,16 +258,19 @@ class YashikaUI(Gtk.ApplicationWindow):
         grid = Gtk.Grid(column_spacing=40, row_spacing=20)
         dashboard.append(grid)
 
+        # Buttons
         self.add_button(grid, "Chat", 0, 0, self.open_chat)
-        self.add_button(grid, "Presets", 1, 0, None)
+        self.add_button(grid, "Presets", 1, 0, self.show_presets)
         self.add_button(grid, "Controls", 0, 1, None)
         self.add_button(grid, "Settings", 1, 1, None)
 
         self.stack.add_named(dashboard, "dashboard")
+        # ---------------- End Dashboard ----------------
 
         # Timer
         GLib.timeout_add(1000, self.update_time)
 
+    # ---------------- Helper Functions ----------------
     def add_button(self, grid, label, col, row, callback):
         btn = Gtk.Button(label=label)
         btn.set_size_request(160, 80)
@@ -211,14 +290,19 @@ class YashikaUI(Gtk.ApplicationWindow):
         self.battery_label.set_text(f"🔋 {batt}")
         return True
 
+    # ---------------- Navigation ----------------
     def open_chat(self):
         chat = ChatWindow(self.show_dashboard)
         self.stack.add_named(chat, "chat")
         self.stack.set_visible_child_name("chat")
+    
+    def show_presets(self):
+        presets = PresetsWindow(self.show_dashboard)
+        self.stack.add_named(presets, "presets")
+        self.stack.set_visible_child_name("presets")
 
     def show_dashboard(self):
         self.stack.set_visible_child_name("dashboard")
-
 
 # -------- Application --------
 class YashikaApp(Gtk.Application):
@@ -252,7 +336,7 @@ window {
     background: black;
     color: #00FFFF;
     border: 2px solid #00FFFF;
-    font-size: 20px;
+    font-size: 30px;
     border-radius: 12px;
     transition: all 200ms ease-in-out;
 }
@@ -278,9 +362,8 @@ window {
     color: #eeeeee;
     border-radius: 6px;
     padding: 4px;
+    font-size: 20px;
 }
-
-
 """
 
 provider = Gtk.CssProvider()
