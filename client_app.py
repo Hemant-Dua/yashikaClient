@@ -5,7 +5,8 @@ from gi.repository import Gtk, GLib, Gdk
 from tts import yashika_speak   # your TTS module
 
 # -------- Backend Chat Function --------
-BASE_URL = "http://192.168.1.35:7860"   # replace with your server IP
+ip = input("Enter Server IP: ")
+BASE_URL = "http://"+ ip +":7860"   # replace with your server IP
 
 def stream_yashika(message, on_chunk, on_done, on_error):
     try:
@@ -39,20 +40,26 @@ class ChatWindow(Gtk.Box):
         # Chat history
         self.textview = Gtk.TextView()
         self.textview.set_editable(False)
+        self.textview.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
         self.textbuffer = self.textview.get_buffer()
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_child(self.textview)
         scrolled.set_vexpand(True)
+        scrolled.set_margin_top(10)
+        scrolled.set_margin_bottom(10)
         self.append(scrolled)
 
         # Typing indicator
         self.typing_label = Gtk.Label(label="")
+        self.typing_label.set_halign(Gtk.Align.START)
         self.append(self.typing_label)
 
         # Input + button
         input_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         self.entry = Gtk.Entry()
         self.entry.set_placeholder_text("Type your message...")
+        self.textview.set_css_classes(["textViewChat"])
+        self.entry.set_css_classes(["chatEntry"])
         self.entry.connect("activate", self.on_send)
         send_button = Gtk.Button(label="Send")
         send_button.set_css_classes(["cyberButton"])
@@ -61,15 +68,16 @@ class ChatWindow(Gtk.Box):
         input_box.append(send_button)
         self.append(input_box)
 
-        # Reusable tags
-        self.tag_you = self.textbuffer.create_tag("chatYou", foreground="#FF00FF", weight=700)
-        self.tag_bot = self.textbuffer.create_tag("chatBot", foreground="#00FFFF")
-        self.tag_err = self.textbuffer.create_tag("chatError", foreground="#FF4444")
+        # Reusable tags with softer colors
+        self.tag_you = self.textbuffer.create_tag("chatYou", foreground="#ff99ff", weight=700)  # soft magenta
+        self.tag_bot = self.textbuffer.create_tag("chatBot", foreground="#66cccc")  # soft cyan/teal
+        self.tag_err = self.textbuffer.create_tag("chatError", foreground="#ff6666")  # softer red
 
         # Streaming state
         self.bot_mark = None
         self.bot_streaming = False
         self.reply_accum = []
+
 
     def _scroll_to_end(self):
         end_iter = self.textbuffer.get_end_iter()
@@ -259,6 +267,20 @@ window {
     box-shadow: 0 0 20px #00FFFF;
     padding: 20px;
 }
+.textViewChat {
+    background-color: #0d0d1a;  /* dark navy */
+    color: #cccccc;             /* soft gray text */
+    border-radius: 8px;
+    padding: 6px;
+}
+.chatEntry {
+    background-color: #1a1a2e;
+    color: #eeeeee;
+    border-radius: 6px;
+    padding: 4px;
+}
+
+
 """
 
 provider = Gtk.CssProvider()
@@ -273,4 +295,4 @@ if display:
 
 # -------- Run --------
 app = YashikaApp()
-app.run()
+app.run(None)
