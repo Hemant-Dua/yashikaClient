@@ -1,0 +1,91 @@
+window {
+    background: linear-gradient(135deg, #000000, #001a33);
+}
+.clock {
+    font-size: 48px;
+    color: #00FFFF;
+    text-shadow: 0 0 12px #00FFFF;
+}
+.date {
+    font-size: 24px;
+    color: #AAAAAA;
+}
+.battery {
+    font-size: 18px;
+    color: #00FF88;
+}
+.cyberButton {
+    background: black;
+    color: #00FFFF;
+    border: 2px solid #00FFFF;
+    font-size: 30px;
+    border-radius: 12px;
+    transition: all 200ms ease-in-out;
+}
+.cyberButton:hover {
+    background: #001122;
+    box-shadow: 0 0 15px #00FFFF;
+}
+.glassBox {
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid #00FFFF;
+    border-radius: 12px;
+    box-shadow: 0 0 20px #00FFFF;
+    padding: 20px;
+}
+.textViewChat {
+    background-color: #0d0d1a;  /* dark navy */
+    color: #cccccc;             /* soft gray text */
+    border-radius: 8px;
+    padding: 6px;
+}
+.chatEntry {
+    background-color: #1a1a2e;
+    color: #eeeeee;
+    border-radius: 6px;
+    padding: 4px;
+    font-size: 20px;
+}
+
+.networkPage {
+    font-size: 26px;     /* main bump */
+    color: white;        /* full visibility */
+}
+
+.networkPage .title {
+    font-size: 32px;     /* section headers */
+    font-weight: 700;
+}
+
+.networkPage .sparkline {
+    font-size: 34px;     /* big bars */
+    font-weight: 700;
+    letter-spacing: 3px;
+}
+
+.networkPage levelbar {
+    min-height: 28px;      /* thickness */
+    border: 2px solid #00FFFF;
+    border-radius: 6px;
+}
+
+.networkPage levelbar block {
+    background-color: #00FFFF;
+}
+/* Network page wide bars */
+.networkPage progressbar {
+    min-height: 34px;            /* bar thickness */
+    border-radius: 8px;
+    background-color: rgba(255,255,255,0.06); /* trough color */
+    padding: 2px;
+}
+
+/* The filled portion */
+.networkPage progressbar progress {
+    background-color: #00FFFF;
+    border-radius: 6px;
+    box-shadow: 0 0 10px #00FFFF;
+}
+
+
+
